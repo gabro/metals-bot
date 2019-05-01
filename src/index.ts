@@ -6,23 +6,6 @@ import { IssuesResponse } from "./models";
 import * as t from "io-ts";
 import { openIssues, updateIssueComment } from "./queries";
 
-const app = express();
-
-app.use(bodyParser.json());
-
-app.post("/webhook", ({ headers }, res) => {
-  const event = headers["x-github-event"];
-  if (event === "issues") {
-    updateFeaturesIssue.run().catch(e => console.error(e));
-  }
-  res.sendStatus(200);
-});
-
-app.listen(process.env.PORT);
-setInterval(() => {
-  http.get(`http://${process.env.PROJECT_DOMAIN}.glitch.me/`);
-}, 280000);
-
 const updateFeaturesIssue = query(openIssues, {}, IssuesResponse).chain(
   ({ repository }) =>
     query(
@@ -38,3 +21,21 @@ const updateFeaturesIssue = query(openIssues, {}, IssuesResponse).chain(
       t.type({})
     )
 );
+
+const app = express();
+
+app.use(bodyParser.json());
+
+app.post("/webhook", ({ headers }, res) => {
+  const event = headers["x-github-event"];
+  if (event === "issues") {
+    updateFeaturesIssue.run().catch(e => console.error(e));
+  }
+  res.sendStatus(200);
+});
+
+setInterval(() => {
+  http.get(`http://${process.env.PROJECT_DOMAIN}.glitch.me/`);
+}, 280000);
+const port = process.env.PORT || 3000;
+app.listen(port, () => console.log("Your app is listening on port " + port));
