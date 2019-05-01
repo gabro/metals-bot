@@ -1,5 +1,6 @@
 import * as express from "express";
 import * as bodyParser from "body-parser";
+import * as http from "http";
 import { query } from "./graphql";
 import { IssuesResponse } from "./models";
 import * as t from "io-ts";
@@ -17,7 +18,10 @@ app.post("/webhook", ({ headers }, res) => {
   res.sendStatus(200);
 });
 
-app.listen(3002);
+app.listen(process.env.PORT);
+setInterval(() => {
+  http.get(`http://${process.env.PROJECT_DOMAIN}.glitch.me/`);
+}, 280000);
 
 const updateFeaturesIssue = query(openIssues, {}, IssuesResponse).chain(
   ({ repository }) =>

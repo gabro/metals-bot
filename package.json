@@ -1,8 +1,11 @@
 {
   "name": "metals-bot",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "lib/index.js",
   "license": "MIT",
+  "scripts": {
+    "start": "node lib/index.js"
+  },
   "devDependencies": {
     "@types/body-parser": "^1.17.0",
     "@types/express": "^4.16.1",
