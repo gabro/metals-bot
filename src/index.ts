@@ -18,7 +18,7 @@ function generateBody(issues: Array<Issue>): string {
           `${issue.reactions.totalCount} | [${issue.title}](${issue.url})`
       )
       .join("\n") +
-    "<sub>last updated on " +
+    "\n\n<sub>last updated on " +
     new Date().toLocaleString("en-US", {
       day: "numeric",
       month: "short",
