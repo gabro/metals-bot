@@ -2,27 +2,41 @@ import * as express from "express";
 import * as bodyParser from "body-parser";
 import * as http from "http";
 import { query } from "./graphql";
-import { IssuesResponse } from "./models";
+import { IssuesResponse, Issue } from "./models";
 import * as t from "io-ts";
 import { openIssues, updateIssueComment } from "./queries";
+
+function generateBody(issues: Array<Issue>): string {
+  return (
+    "## Feature requests\n\n" +
+    " 👍votes | issue |\n" +
+    ":-------:|---------|\n" +
+    issues
+      .sort((a, b) => b.reactions.totalCount - a.reactions.totalCount)
+      .map(
+        issue =>
+          `${issue.reactions.totalCount} | [${issue.title}](${issue.url})`
+      )
+      .join("\n") +
+    "<sub>last updated on " +
+    new Date().toLocaleString("en-US", {
+      day: "numeric",
+      month: "short",
+      hour: "2-digit",
+      minute: "2-digit"
+    }) +
+    "</sub>"
+  );
+}
 
 const updateFeaturesIssue = query(openIssues, {}, IssuesResponse).chain(
   ({ repository }) =>
     query(
       updateIssueComment,
       {
-        commentId: "MDEyOklzc3VlQ29tbWVudDQ4ODMxMTQ2Ng==", // first comment of scalameta/metals#707
-        body:
-          "## Feature requests\n\n" +
-          " feature | 👍votes |\n" +
-          "---------|:-------:|\n" +
-          repository.issues.nodes
-            .sort((a, b) => b.reactions.totalCount - a.reactions.totalCount)
-            .map(
-              issue =>
-                `[${issue.title}](${issue.url}) | ${issue.reactions.totalCount}`
-            )
-            .join("\n")
+        // id of first comment on scalameta/metals#707
+        commentId: "MDEyOklzc3VlQ29tbWVudDQ4ODMxMTQ2Ng==",
+        body: generateBody(repository.issues.nodes)
       },
       t.type({})
     )
