@@ -1,12 +1,13 @@
 language: node_js
 node_js:
   - lts/*
+deploy:
+  provider: script
 env:
   - GITHUB_USER=scalameta-bot
   - GITHUB_REPO=gabro/scalameta-bot
   - GLITCH_DOMAIN=scalameta-bot
-deploy:
-  provider: script
-  script: DEBUG=glitch-deploy* npx glitch-deploy
+  - DEBUG=glitch-deploy*
+  script: npx glitch-deploy
   on:
     branch: master
