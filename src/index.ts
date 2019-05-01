@@ -11,7 +11,7 @@ const updateFeaturesIssue = query(openIssues, {}, IssuesResponse).chain(
     query(
       updateIssueComment,
       {
-        commentId: "MDEyOklzc3VlQ29tbWVudDQ4ODI0NjI2OA==",
+        commentId: "MDEyOklzc3VlQ29tbWVudDQ4ODMwMjY1OQ==", // first comment of scalameta/metals#707
         body:
           "## Feature requests\n\n" +
           repository.issues.nodes
