@@ -10,6 +10,3 @@ deploy:
   script: DEBUG=glitch-deploy* npx glitch-deploy
   on:
     branch: master
-branches:
-  only:
-    - master
