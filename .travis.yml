@@ -3,7 +3,7 @@ node_js:
   - lts/*
 deploy:
   provider: script
-  script: DEBUG=glitch-deploy* glitch-deploy
+  script: DEBUG=glitch-deploy* npx glitch-deploy
   on:
     branch: master
 script: echo ""
