@@ -1,0 +1,15 @@
+language: node_js
+node_js:
+  - lts/*
+env:
+  - GITHUB_USER=scalameta-bot
+  - GITHUB_REPO=gabro/metals-bot
+  - GLITCH_DOMAIN=scalameta-bot
+deploy:
+  provider: script
+  script: DEBUG=glitch-deploy* npx glitch-deploy
+  on:
+    branch: master
+branches:
+  only:
+    - master
