@@ -3,7 +3,10 @@ import * as t from "io-ts";
 export const Issue = t.type(
   {
     title: t.string,
-    url: t.string
+    url: t.string,
+    reactions: t.type({
+      totalCount: t.number
+    })
   },
   "Issue"
 );

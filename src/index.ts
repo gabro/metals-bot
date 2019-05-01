@@ -11,11 +11,17 @@ const updateFeaturesIssue = query(openIssues, {}, IssuesResponse).chain(
     query(
       updateIssueComment,
       {
-        commentId: "MDEyOklzc3VlQ29tbWVudDQ4ODMwMjY1OQ==", // first comment of scalameta/metals#707
+        commentId: "MDEyOklzc3VlQ29tbWVudDQ4ODMxMTQ2Ng==", // first comment of scalameta/metals#707
         body:
           "## Feature requests\n\n" +
+          " feature | 👍votes |\n" +
+          "---------|:-------:|\n" +
           repository.issues.nodes
-            .map(issue => `- [${issue.title}](${issue.url})`)
+            .sort((a, b) => b.reactions.totalCount - a.reactions.totalCount)
+            .map(
+              issue =>
+                `[${issue.title}](${issue.url}) | ${issue.reactions.totalCount}`
+            )
             .join("\n")
       },
       t.type({})

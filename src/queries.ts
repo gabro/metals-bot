@@ -3,7 +3,10 @@ export const openIssues = `query OpenIssues {
     issues(filterBy: { states: OPEN }, first: 100) {
       nodes {
         title,
-        url
+        url,
+        reactions(content: THUMBS_UP) {
+          totalCount
+        }
       }
     }
   }

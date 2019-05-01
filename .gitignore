@@ -85,3 +85,4 @@ typings/
 
 # TS
 tsconfig.tsbuildinfo
+lib
