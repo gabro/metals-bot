@@ -39,3 +39,6 @@ setInterval(() => {
 }, 280000);
 const port = process.env.PORT || 3000;
 app.listen(port, () => console.log("Your app is listening on port " + port));
+
+// run at startup
+updateFeaturesIssue.run().catch(e => console.error(e));
