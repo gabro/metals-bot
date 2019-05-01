@@ -5,6 +5,7 @@ import { query } from "./graphql";
 import { IssuesResponse, Issue } from "./models";
 import * as t from "io-ts";
 import { openIssues, updateIssueComment } from "./queries";
+import { CronJob } from "cron";
 
 function generateBody(issues: Array<Issue>): string {
   return (
@@ -31,8 +32,8 @@ function generateBody(issues: Array<Issue>): string {
   );
 }
 
-const updateFeaturesIssue = query(openIssues, {}, IssuesResponse).chain(
-  ({ repository }) =>
+const updateFeaturesIssue = query(openIssues, {}, IssuesResponse)
+  .chain(({ repository }) =>
     query(
       updateIssueComment,
       {
@@ -42,7 +43,8 @@ const updateFeaturesIssue = query(openIssues, {}, IssuesResponse).chain(
       },
       t.type({})
     )
-);
+  )
+  .mapLeft(e => console.error(e));
 
 const app = express();
 
@@ -51,7 +53,7 @@ app.use(bodyParser.json());
 app.post("/webhook", ({ headers }, res) => {
   const event = headers["x-github-event"];
   if (event === "issues") {
-    updateFeaturesIssue.run().catch(e => console.error(e));
+    updateFeaturesIssue.run();
   }
   res.sendStatus(200);
 });
@@ -62,5 +64,11 @@ setInterval(() => {
 const port = process.env.PORT || 3000;
 app.listen(port, () => console.log("Your app is listening on port " + port));
 
-// run at startup
-updateFeaturesIssue.run().catch(e => console.error(e));
+// Run every hour, in addition to whenever we receive an issue webhook.
+// This is useful to catch updates that don't generate a webhook, such
+// as reactions on issues
+new CronJob({
+  cronTime: "0 * * * *",
+  onTick: () => updateFeaturesIssue.run(),
+  runOnInit: true
+}).start();
