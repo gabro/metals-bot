@@ -3,11 +3,12 @@ node_js:
   - lts/*
 deploy:
   provider: script
-env:
-  - GITHUB_USER=scalameta-bot
-  - GITHUB_REPO=gabro/scalameta-bot
-  - GLITCH_DOMAIN=scalameta-bot
-  - DEBUG=glitch-deploy*
+  env:
+    - GITHUB_USER=scalameta-bot
+    - GITHUB_REPO=gabro/scalameta-bot
+    - GLITCH_DOMAIN=scalameta-bot
+    - DEBUG=glitch-deploy*
   script: npx glitch-deploy
   on:
     branch: master
+script: echo ""
