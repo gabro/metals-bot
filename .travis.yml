@@ -3,7 +3,7 @@ node_js:
   - lts/*
 env:
   - GITHUB_USER=scalameta-bot
-  - GITHUB_REPO=gabro/metals-bot
+  - GITHUB_REPO=gabro/scalameta-bot
   - GLITCH_DOMAIN=scalameta-bot
 deploy:
   provider: script
