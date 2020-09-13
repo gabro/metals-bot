@@ -6,6 +6,8 @@ import { IssuesResponse, Issue } from "./models";
 import * as t from "io-ts";
 import { openIssues, updateIssueComment } from "./queries";
 import { CronJob } from "cron";
+import { taskEither } from "fp-ts";
+import { pipe } from "fp-ts/function";
 
 function generateBody(issues: Array<Issue>): string {
   return (
@@ -15,7 +17,7 @@ function generateBody(issues: Array<Issue>): string {
     issues
       .sort((a, b) => b.reactions.totalCount - a.reactions.totalCount)
       .map(
-        issue =>
+        (issue) =>
           `${issue.reactions.totalCount} | [${issue.title}](${issue.url})`
       )
       .join("\n") +
@@ -26,25 +28,27 @@ function generateBody(issues: Array<Issue>): string {
       hour: "2-digit",
       minute: "2-digit",
       timeZone: "UTC",
-      timeZoneName: "short"
+      timeZoneName: "short",
     }) +
     "</sub>"
   );
 }
 
-const updateFeaturesIssue = query(openIssues, {}, IssuesResponse)
-  .chain(({ repository }) =>
+const updateFeaturesIssue = pipe(
+  query(openIssues, {}, IssuesResponse),
+  taskEither.chain(({ repository }) =>
     query(
       updateIssueComment,
       {
         // id of first comment on scalameta/metals#707
         commentId: "MDEyOklzc3VlQ29tbWVudDQ4ODMxMTQ2Ng==",
-        body: generateBody(repository.issues.nodes)
+        body: generateBody(repository.issues.nodes),
       },
       t.type({})
     )
-  )
-  .mapLeft(e => console.error(e));
+  ),
+  taskEither.mapLeft((e) => console.error(e))
+);
 
 const app = express();
 
@@ -53,7 +57,7 @@ app.use(bodyParser.json());
 app.post("/webhook", ({ headers }, res) => {
   const event = headers["x-github-event"];
   if (event === "issues") {
-    updateFeaturesIssue.run();
+    updateFeaturesIssue();
   }
   res.sendStatus(200);
 });
@@ -69,6 +73,6 @@ app.listen(port, () => console.log("Your app is listening on port " + port));
 // as reactions on issues
 new CronJob({
   cronTime: "0 * * * *",
-  onTick: () => updateFeaturesIssue.run(),
-  runOnInit: true
+  onTick: () => updateFeaturesIssue(),
+  runOnInit: true,
 }).start();
