@@ -12,11 +12,3 @@ export const openIssues = `query OpenIssues {
   }
 }
 `;
-
-export const updateIssueComment = `
-mutation UpdateIssueComment($commentId: ID!, $body: String!) {
-  updateIssueComment(input: { id: $commentId, body: $body }) {
-    clientMutationId
-  }
-}
-`;

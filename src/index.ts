@@ -1,13 +1,9 @@
-import * as express from "express";
-import * as bodyParser from "body-parser";
-import * as http from "http";
 import { query } from "./graphql";
 import { IssuesResponse, Issue } from "./models";
-import * as t from "io-ts";
-import { openIssues, updateIssueComment } from "./queries";
-import { CronJob } from "cron";
+import { openIssues } from "./queries";
 import { taskEither } from "fp-ts";
 import { pipe } from "fp-ts/function";
+import * as core from "@actions/core";
 
 function generateBody(issues: Array<Issue>): string {
   return (
@@ -34,45 +30,36 @@ function generateBody(issues: Array<Issue>): string {
   );
 }
 
-const updateFeaturesIssue = pipe(
-  query(openIssues, {}, IssuesResponse),
-  taskEither.chain(({ repository }) =>
-    query(
-      updateIssueComment,
-      {
-        // id of first comment on scalameta/metals#707
-        commentId: "MDEyOklzc3VlQ29tbWVudDQ4ODMxMTQ2Ng==",
-        body: generateBody(repository.issues.nodes),
+function run(): Promise<unknown> {
+  return pipe(
+    query(openIssues, {}, IssuesResponse),
+    taskEither.bimap(
+      (e) => {
+        core.debug(e);
+        core.setFailed(e);
       },
-      t.type({})
+      ({ repository }) => {
+        const commentBody = generateBody(repository.issues.nodes);
+        core.setOutput("comment-body", commentBody);
+      }
     )
-  ),
-  taskEither.mapLeft((e) => console.error(e))
-);
+  )();
+}
 
-const app = express();
+run();
 
-app.use(bodyParser.json());
-
-app.post("/webhook", ({ headers }, res) => {
-  const event = headers["x-github-event"];
-  if (event === "issues") {
-    updateFeaturesIssue();
-  }
-  res.sendStatus(200);
-});
-
-setInterval(() => {
-  http.get(`http://${process.env.PROJECT_DOMAIN}.glitch.me/`);
-}, 280000);
-const port = process.env.PORT || 3000;
-app.listen(port, () => console.log("Your app is listening on port " + port));
-
-// Run every hour, in addition to whenever we receive an issue webhook.
-// This is useful to catch updates that don't generate a webhook, such
-// as reactions on issues
-new CronJob({
-  cronTime: "0 * * * *",
-  onTick: () => updateFeaturesIssue(),
-  runOnInit: true,
-}).start();
+// const updateFeaturesIssue = pipe(
+//   query(openIssues, {}, IssuesResponse),
+//   taskEither.chain(({ repository }) =>
+//     query(
+//       updateIssueComment,
+//       {
+//         // id of first comment on scalameta/metals#707
+//         commentId: "MDEyOklzc3VlQ29tbWVudDQ4ODMxMTQ2Ng==",
+//         body: generateBody(repository.issues.nodes),
+//       },
+//       t.type({})
+//     )
+//   ),
+//   taskEither.mapLeft((e) => console.error(e))
+// );
