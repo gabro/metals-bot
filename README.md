@@ -1,3 +1,8 @@
+> # Deprecation note
+> Currently deprecated: the only task this bot had was to publish a summary of Metals feature requests in a dedicated issue, which has now been migrated to a custom GitHub action in the https://github.com/scalameta/metals-feature-request repository.
+
+---
+
 # scalameta-bot
 
 GitHub Bot to automate tasks on Scalameta projects
